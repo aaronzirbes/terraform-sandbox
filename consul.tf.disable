@@ -1,0 +1,12 @@
+module "consul" {
+    source = "github.com/hashicorp/consul/terraform/aws"
+
+    key_name = "aaronzirbes"
+    key_path = "~/.ssh/aaronzirbes.pem"
+    region = "us-east-1"
+    servers = "1"
+}
+
+output "consul_address" {
+    value = "${module.consul.server_address}"
+}
