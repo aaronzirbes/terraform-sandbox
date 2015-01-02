@@ -3,6 +3,7 @@ resource "aws_security_group" "allow_all" {
 
     name = "allow_all"
     description = "Allow all inbound TCP/UDP traffic"
+    vpc_id = "${aws_vpc.main.id}"
 
     ingress {
         from_port = 0
@@ -23,10 +24,11 @@ resource "aws_security_group" "allow_all" {
 }
 
 /* Security Groups and stuff */
-resource "aws_security_group" "http_ssh_only" {
+resource "aws_security_group" "http_https_ssh" {
 
-    name = "allow_all"
+    name = "http_https_ssh"
     description = "Allow all inbound TCP/UDP traffic"
+    vpc_id = "${aws_vpc.main.id}"
 
     ingress {
         from_port = 22

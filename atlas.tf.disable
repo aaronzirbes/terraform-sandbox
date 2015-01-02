@@ -1,0 +1,18 @@
+variable "atlas_token" {
+    description = "Hashicorp Atlas API access token"
+}
+
+# Configure the Atlas provider
+provider "atlas" {
+    token = "${var.atlas_token}"
+}
+
+# Read the AMI
+resource "atlas_artifact" "frontend" {
+    name = "aaronzirbes/frontend"
+    type = "aws.ami"
+    build = "latest"
+    metadata {
+        arch = "386"
+    }
+}

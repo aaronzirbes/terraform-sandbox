@@ -5,39 +5,35 @@ variable "frontend_ami" {
     # ubuntu/images/ebs/ubuntu-trusty-14.04-amd64-server-20141125
     default = "ami-64e27e0c"
     description = "the AMI to use for front end"
-
-    # TODO: Add provisioning
 }
 
 /* The OEM Portal Web Frontend. */
 resource "aws_instance" "frontend" {
     ami = "${var.frontend_ami}"
     instance_type = "m1.small"
-    key_name = "frontend-instace"
-
-    security_groups = [ "${aws_security_group.http_ssh_only.id}" ]
-
+    key_name = "aaronzirbes"
+    security_groups = [ "${aws_security_group.http_https_ssh.id}" ]
     subnet_id = "${aws_subnet.dmz.id}"
-
-    # user_data = {...}
-
     associate_public_ip_address = true
+    user_data = "consul_address=192.0.0.1"
+    tags = { 
+        Environment = "ajz-terraform"
+    }
 
-    # tags = { "Environment": "ajz-terraform" }
+    # TODO: Add provisioning
+    # user_data = "consul_address=${module.consul.server_address}"
 }
 
 resource "aws_launch_configuration" "frontend" {
 
     name = "frontend-scaling-config"
-    image_id = "${aws_instance.frontend.ami}"
-
+    image_id = "${var.frontend_ami}"
     instance_type = "m1.small"
+    key_name = "aaronzirbes"
+    security_groups = [ "${aws_security_group.http_https_ssh.id}" ]
+    user_data = "consul_address=192.0.0.1"
 
-    key_name = "frontent_scaling_config"
-
-    security_groups = [ "${aws_security_group.http_ssh_only.id}" ]
-
-    user_data = "consul_address=${module.consul.server_address}"
+    # user_data = "consul_address=${module.consul.server_address}"
 }
 
 resource "aws_autoscaling_group" "frontend" {
