@@ -1,4 +1,19 @@
 /* Security Groups and stuff */
+
+resource "aws_security_group" "nat" {
+    name = "nat"
+    description = "Allow services from the private subnet through NAT"
+
+    ingress {
+        from_port = 0
+        to_port = 65535
+        protocol = "tcp"
+        cidr_blocks = ["${aws_subnet.internal.cidr_block}"]
+    }
+
+    vpc_id = "${aws_vpc.main.id}"
+}
+
 resource "aws_security_group" "allow_all" {
 
     name = "allow_all"
@@ -23,18 +38,17 @@ resource "aws_security_group" "allow_all" {
     }
 }
 
-/* Security Groups and stuff */
-resource "aws_security_group" "http_https_ssh" {
+resource "aws_security_group" "http" {
 
-    name = "http_https_ssh"
-    description = "Allow all inbound TCP/UDP traffic"
+    name = "http"
+    description = "Allow only inbound TCP HTTP(s) traffic"
     vpc_id = "${aws_vpc.main.id}"
 
     ingress {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        cidr_blocks = ["${aws_subnet.common.cidr_block}"]
         tags {
             Name = "ssh"
         }
@@ -62,5 +76,23 @@ resource "aws_security_group" "http_https_ssh" {
 
     tags {
         Name = "web_servers"
+    }
+}
+
+
+resource "aws_security_group" "ssh" {
+
+    name = "ssh_only_sg"
+    description = "Allow all inbound TCP SSH traffic"
+    vpc_id = "${aws_vpc.main.id}"
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+        tags {
+            Name = "ssh"
+        }
     }
 }
