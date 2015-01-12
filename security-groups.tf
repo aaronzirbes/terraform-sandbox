@@ -48,7 +48,7 @@ resource "aws_security_group" "http" {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = ["${aws_subnet.common.cidr_block}"]
+        cidr_blocks = ["${aws_vpc.main.cidr_block}"]
         tags {
             Name = "ssh"
         }
@@ -82,7 +82,7 @@ resource "aws_security_group" "http" {
 
 resource "aws_security_group" "ssh" {
 
-    name = "ssh_only_sg"
+    name = "ssh"
     description = "Allow all inbound TCP SSH traffic"
     vpc_id = "${aws_vpc.main.id}"
 

@@ -8,18 +8,14 @@ resource "aws_instance" "frontend" {
     key_name = "aaronzirbes"
     security_groups = [ "${aws_security_group.http.id}" ]
     subnet_id = "${aws_subnet.dmz.id}"
-    associate_public_ip_address = true
     user_data = "consul_address=192.0.0.1"
 
     availability_zone = "${var.aws_availability_zone}"
 
+    depends_on = "aws_internet_gateway.gw"
+
     tags = { 
         Environment = "${var.aws_environment}"
-    }
-
-    connection {
-        user = "ubuntu"
-        key_file = "${var.aws_key_path}"
     }
 
     # TODO: Add provisioning

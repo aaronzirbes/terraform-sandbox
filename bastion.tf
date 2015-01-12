@@ -1,4 +1,5 @@
-# Bastion
+# Bastion host
+
 resource "aws_instance" "bastion" {
     ami = "${lookup(var.ubuntu_amis, var.aws_region)}"
     availability_zone = "${var.aws_availability_zone}"
@@ -6,10 +7,21 @@ resource "aws_instance" "bastion" {
     key_name = "${var.aws_key_name}"
     security_groups = ["${aws_security_group.ssh.id}"]
     subnet_id = "${aws_subnet.dmz.id}"
+}
+
+resource "aws_eip" "bastion" {
+    instance = "${aws_instance.bastion.id}"
+    vpc = true
 
     connection {
         user = "ubuntu"
         key_file = "${var.aws_key_path}"
+        timeout = "60s"
+        host = "${aws_eip.bastion.public_ip}"
+    }
+
+    provisioner "local-exec" {
+        command = "echo ${aws_eip.bastion.public_ip} > bastion_ip.txt"
     }
 
     # Provision SSH key
@@ -17,9 +29,15 @@ resource "aws_instance" "bastion" {
         source = "${var.aws_key_path}"
         destination = "/home/ubuntu/.ssh/id_rsa"
     }
+
 }
 
-resource "aws_eip" "bastion" {
-    instance = "${aws_instance.bastion.id}"
-    vpc = true
+/* Register the bastion's IP address */
+resource "aws_route53_record" "bastion" {
+   zone_id = "${aws_route53_zone.primary.zone_id}"
+   name = "bastion.${aws_route53_zone.primary.name}"
+   type = "A"
+   ttl = "90"
+
+   records = ["${aws_eip.bastion.public_ip}"]
 }
