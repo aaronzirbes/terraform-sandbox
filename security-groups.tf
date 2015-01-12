@@ -79,7 +79,6 @@ resource "aws_security_group" "http" {
     }
 }
 
-
 resource "aws_security_group" "ssh" {
 
     name = "ssh"
@@ -94,5 +93,26 @@ resource "aws_security_group" "ssh" {
         tags {
             Name = "ssh"
         }
+    }
+}
+
+resource "aws_security_group" "consul" {
+    name = "consul"
+    description = "Consul internal traffic + maintenance."
+    vpc_id = "${aws_vpc.main.id}"
+
+    // These are for internal traffic
+    ingress {
+        from_port = 0
+        to_port = 65535
+        protocol = "tcp"
+        self = true
+    }
+
+    ingress {
+        from_port = 0
+        to_port = 65535
+        protocol = "udp"
+        self = true
     }
 }

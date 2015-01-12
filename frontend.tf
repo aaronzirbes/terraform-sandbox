@@ -6,10 +6,11 @@ resource "aws_instance" "frontend" {
     ami = "${lookup(var.ubuntu_amis, var.aws_region)}"
     instance_type = "m1.small"
     key_name = "aaronzirbes"
-    security_groups = [ "${aws_security_group.http.id}" ]
+    security_groups = [
+        "${aws_security_group.http.id}",
+        "${aws_security_group.ssh.id}"
+    ]
     subnet_id = "${aws_subnet.dmz.id}"
-    user_data = "consul_address=192.0.0.1"
-
     availability_zone = "${var.aws_availability_zone}"
 
     depends_on = "aws_internet_gateway.gw"
@@ -18,13 +19,28 @@ resource "aws_instance" "frontend" {
         Environment = "${var.aws_environment}"
     }
 
-    # TODO: Add provisioning
-    # user_data = "consul_address=${module.consul.server_address}"
+    # TODO: Add consul host
+    user_data = "consul_address=192.0.0.1"
+    #user_data = "consul_address=${aws_elb.consul.server_address}"
 }
 
 resource "aws_eip" "frontend" {
     instance = "${aws_instance.frontend.id}"
     vpc = true
+
+    connection {
+        user = "ubuntu"
+        key_file = "${var.aws_key_path}"
+        timeout = "90s"
+        host = "${aws_eip.frontend.public_ip}"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+            "sudo apt-get update",
+            "sudo apt-get -y install nginx"
+        ]
+    }
 }
 
 /* Register the frontend's IP address */
@@ -61,7 +77,10 @@ resource "aws_launch_configuration" "frontend" {
     image_id = "${lookup(var.ubuntu_amis, var.aws_region)}"
     instance_type = "m1.small"
     key_name = "aaronzirbes"
-    security_groups = [ "${aws_security_group.http.id}" ]
+    security_groups = [
+        "${aws_security_group.http.id}",
+        "${aws_security_group.ssh.id}"
+    ]
     user_data = "consul_address=192.0.0.1"
 
     # user_data = "consul_address=${module.consul.server_address}"

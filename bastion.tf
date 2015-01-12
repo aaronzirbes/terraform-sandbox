@@ -16,19 +16,22 @@ resource "aws_eip" "bastion" {
     connection {
         user = "ubuntu"
         key_file = "${var.aws_key_path}"
-        timeout = "60s"
+        timeout = "90s"
         host = "${aws_eip.bastion.public_ip}"
     }
 
-    provisioner "local-exec" {
-        command = "echo ${aws_eip.bastion.public_ip} > bastion_ip.txt"
-    }
-
+    /*
     # Provision SSH key
     provisioner "file" {
         source = "${var.aws_key_path}"
         destination = "/home/ubuntu/.ssh/id_rsa"
     }
+    provisioner "remote-exec" {
+        inline = [
+            "chmod 0400 ~/.ssh/id_rsa"
+        ]
+    }
+    */
 
 }
 
